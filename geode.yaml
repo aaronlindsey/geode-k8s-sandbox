@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geode
+spec:
+  selector:
+    matchLabels:
+      run: geode
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: geode
+    spec:
+      containers:
+      - name: geode
+        image: apachegeode/geode:1.10.0
+        ports:
+        - containerPort: 10334
+          name: locator
+        - containerPort: 1099
+          name: jmx
+        - containerPort: 7070
+          name: pulse
+        - containerPort: 8080
+          name: rest
+        - containerPort: 40404
+          name: cacheserver
+        command: [ "java" ]
+        args:
+        - -server
+        - -classpath
+        - /geode/lib/geode-core-1.10.0.jar:/geode/lib/geode-dependencies.jar
+        - -Dgemfire.enable-cluster-configuration=true
+        - -Dgemfire.load-cluster-configuration-from-dir=false
+        - -Dgemfire.launcher.registerSignalHandlers=true
+        - -Djava.awt.headless=true
+        - -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+        - org.apache.geode.distributed.LocatorLauncher
+        - start
+        - locator
+        - --port=10334
