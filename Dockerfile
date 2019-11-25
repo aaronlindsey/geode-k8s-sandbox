@@ -21,32 +21,15 @@ RUN apk add --no-cache \
 		bash \
 		ncurses
 
-# pub   4096R/ABF4396F 2018-04-12 [expires: 2022-04-12]
-#       8763 31B4 5A97 E382 D1BD  FB44 4482 0F9C ABF4 396F
-# uid       [  undef ] Mike Stolz <mikestolz@apache.org>
-# sub   4096R/3871E6AD 2018-04-12 [expires: 2022-04-12]
-ENV GEODE_GPG DB5476815A475574577D442B468A4800EAFB2498
-# TODO does this change per-release like other Apache projects? (and thus needs to be a list of full fingerprints from a KEYS file instead?)
-
 ENV GEODE_HOME /geode
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # https://geode.apache.org/releases/
-ENV GEODE_VERSION 1.9.0
-# Binaries TGZ SHA-256
-# https://dist.apache.org/repos/dist/release/geode/VERSION/apache-geode-VERSION.tgz.sha256
-ENV GEODE_SHA256 8794808ebc89bc855f0b989b32e91e890d446cfd058e123f6ccb9e12597c1c4f
-
-# http://apache.org/dyn/closer.cgi/geode/1.3.0/apache-geode-1.3.0.tgz
+ENV GEODE_VERSION 1.10.0
 
 RUN set -eux; \
-	apk add --no-cache --virtual .fetch-deps \
-		libressl \
-		gnupg \
-	; \
 	for file in \
 		"geode/$GEODE_VERSION/apache-geode-$GEODE_VERSION.tgz" \
-		"geode/$GEODE_VERSION/apache-geode-$GEODE_VERSION.tgz.asc" \
 	; do \
 		target="$(basename "$file")"; \
 		for url in \
@@ -62,20 +45,13 @@ RUN set -eux; \
 		done; \
 	done; \
 	[ -s "apache-geode-$GEODE_VERSION.tgz" ]; \
-	[ -s "apache-geode-$GEODE_VERSION.tgz.asc" ]; \
-	echo "$GEODE_SHA256 *apache-geode-$GEODE_VERSION.tgz" | sha256sum -c -; \
-	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GEODE_GPG"; \
-	gpg --batch --verify "apache-geode-$GEODE_VERSION.tgz.asc" "apache-geode-$GEODE_VERSION.tgz"; \
-	rm -rf "$GNUPGHOME"; \
 	mkdir /geode; \
 	tar --extract \
 		--file "apache-geode-$GEODE_VERSION.tgz" \
 		--directory /geode \
 		--strip-components 1 \
 	; \
-	rm -rf /geode/javadoc "apache-geode-$GEODE_VERSION.tgz" "apache-geode-$GEODE_VERSION.tgz.asc"; \
-	apk del .fetch-deps; \
+	rm -rf /geode/javadoc "apache-geode-$GEODE_VERSION.tgz"; \
 # smoke test to ensure the shell can still run properly after removing temporary deps
 	gfsh version
 
