@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: geode-locator
+spec:
+  serviceName: geode-locator
+  replicas: 3
+  selector:
+    matchLabels:
+      app: geode-locator
+  template:
+    metadata:
+      labels:
+        app: geode-locator
+    spec:
+      containers:
+      - name: geode-locator
+        image: geode-k8s:latest
+        imagePullPolicy: Never
+        command:
+        - ./locator_init.sh
+        ports:
+        - containerPort: 10334
+          name: locator
+        livenessProbe:
+          tcpSocket:
+            port: 10334
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        readinessProbe:
+          exec:
+            command:
+            - ./ready_probe.sh
+            - locator
+          initialDelaySeconds: 30
+          timeoutSeconds: 5

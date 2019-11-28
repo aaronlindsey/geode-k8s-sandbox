@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: geode-server
+spec:
+  ports:
+  - port: 40404
+    name: server
+  clusterIP: None
+  selector:
+    app: geode-server

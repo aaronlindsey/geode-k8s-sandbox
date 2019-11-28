@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: geode-server
+spec:
+  serviceName: geode-server
+  replicas: 3
+  selector:
+    matchLabels:
+      app: geode-server
+  template:
+    metadata:
+      labels:
+        app: geode-server
+    spec:
+      containers:
+      - name: geode-server
+        image: geode-k8s:latest
+        imagePullPolicy: Never
+        command:
+        - ./server_init.sh
+        ports:
+        - containerPort: 40404
+          name: server
+        livenessProbe:
+          tcpSocket:
+            port: 40404
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        readinessProbe:
+          exec:
+            command:
+            - ./ready_probe.sh
+            - server
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
